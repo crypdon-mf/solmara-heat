@@ -49,8 +49,8 @@ export function initStreetLife(scene, city, seed) {
   const shirtCols = [0xe05a5a, 0x4a90d9, 0x7ac74f, 0xf2b705, 0x9b59b6, 0xe07b39, 0xeeeeee, 0x2a9d8f];
   for (let i = 0; i < TUNE.pedCount; i++) {
     const ped = makePed(scene, rng, shirtCols);
-    ped.x = rng.int(-B, B) * P + rng.float(-9, 9);
-    ped.z = rng.int(-B, B) * P + rng.float(-9, 9);
+    ped.x = (rng.int(-B - 1, B - 1) + 0.5) * P + rng.float(-8, 8);
+    ped.z = (rng.int(-B - 1, B - 1) + 0.5) * P + rng.float(-8, 8);
     pickWalkTarget(ped, rng);
     life.peds.push(ped);
   }
@@ -82,11 +82,11 @@ function makePed(scene, rng, cols) {
 
 function pickWalkTarget(ped, rng) {
   // Next corner of a nearby block — peds walk the sidewalks, block to block.
-  const bx = Math.round(ped.x / P), bz = Math.round(ped.z / P);
-  const nbx = THREE.MathUtils.clamp(bx + rng.int(-1, 1), -B, B);
-  const nbz = THREE.MathUtils.clamp(bz + rng.int(-1, 1), -B, B);
-  ped.tx = nbx * P + rng.float(-8, 8);
-  ped.tz = nbz * P + rng.float(-8, 8);
+  const bx = Math.floor(ped.x / P), bz = Math.floor(ped.z / P);
+  const nbx = THREE.MathUtils.clamp(bx + rng.int(-1, 1), -B - 1, B - 1);
+  const nbz = THREE.MathUtils.clamp(bz + rng.int(-1, 1), -B - 1, B - 1);
+  ped.tx = (nbx + 0.5) * P + rng.float(-8, 8);
+  ped.tz = (nbz + 0.5) * P + rng.float(-8, 8);
 }
 
 export function stepTraffic(life, city, dt, ctx) {
@@ -100,12 +100,14 @@ export function stepTraffic(life, city, dt, ctx) {
       const along = ai.axis === 'x' ? other.x - car.x : other.z - car.z;
       if (along * ai.dir > 0 && along * ai.dir < 7) { blocked = true; break; }
     }
-    // player car ahead?
+    // player car ahead on the same road?
     const pc = ctx.playerCar;
     if (pc) {
       const along = ai.axis === 'x' ? pc.x - car.x : pc.z - car.z;
       const side = ai.axis === 'x' ? Math.abs(pc.z - car.z) : Math.abs(pc.x - car.x);
       if (along * ai.dir > 0 && along * ai.dir < 7 && side < 3) blocked = true;
+      // yield: never ram the player's car — stop if it is close in any direction
+      if (Math.hypot(pc.x - car.x, pc.z - car.z) < 8) blocked = true;
     }
     // red light ahead?
     const nodeCoord = ai.axis === 'x' ? car.x : car.z;

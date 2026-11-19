@@ -18,8 +18,8 @@ export function applyShot(shot, W) {
   if (shot === 'drive') {
     W.ctx.hour = 10.5;
     stage.setTime(10.5);
-    // mid-block on the x=0 road (not on an intersection), cruising south
-    const car = createCar(W.scene, 'sport', 0, 85, 0, 0xd21f3c);
+    // mid-block on the z=0 road, cruising east through downtown
+    const car = createCar(W.scene, 'sport', -119, 0, Math.PI / 2, 0xd21f3c);
     car.ai = { parked: false };
     W.allCars.push(car);
     hero.car = car; car.isPlayer = true; car.speed = 22;

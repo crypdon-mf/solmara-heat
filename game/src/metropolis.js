@@ -119,11 +119,11 @@ export function buildCity(stage, seed) {
   }
   // --- roads: crosswalks are painted into the road texture; no extra meshes ---
 
-  // --- blocks: sidewalks + buildings ---
+  // --- blocks: sidewalks + buildings, centred BETWEEN the roads ---
+  // (blocks at half-grid positions so road centrelines stay open asphalt)
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3f46, roughness: 1 });
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x9fc4e8, roughness: 0.15, metalness: 0.6 });
-  for (let bx = -B; bx <= B; bx++) for (let bz = -B; bz <= B; bz++) {
-    const cx = bx * P, cz = bz * P;
+  for (let bx = -B - 1; bx <= B - 1; bx++) for (let bz = -B - 1; bz <= B - 1; bz++) {
+    const cx = (bx + 0.5) * P, cz = (bz + 0.5) * P;
     const dist = DISTRICTS[districtAt(cx, cz)];
     // sidewalk slab
     const walk = new THREE.Mesh(
@@ -143,15 +143,13 @@ export function buildCity(stage, seed) {
       const { map, emissive } = facadeTexture(rng, hex, accHex, 0.35);
       const mat = new THREE.MeshStandardMaterial({ map, emissiveMap: emissive, emissive: 0xffffff, emissiveIntensity: 0 });
       city.buildingMats.push(mat);
-      const tower = dist === 'downtown' && rng.chance(0.5);
       const mesh = new THREE.Mesh(
         new THREE.BoxGeometry(w, h, d),
-        tower ? glassMat : mat,
+        mat,
       );
       mesh.position.set(x, h / 2 + 0.3, z);
       mesh.castShadow = true; mesh.receiveShadow = true;
       scene.add(mesh);
-      if (tower) city.buildingMats.push(glassMat);
       // roof furniture — only on taller buildings, to keep draw calls down
       if (h > 16) {
         const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 0.5, 1.2, d * 0.4), roofMat);
@@ -339,6 +337,6 @@ export function collideBuildings(city, x, z, r) {
 }
 
 export function clampToCity(x, z) {
-  const lim = TUNE.blocks * TUNE.pitch + 26;
+  const lim = TUNE.blocks * TUNE.pitch + 30;
   return { x: Math.max(-lim, Math.min(lim, x)), z: Math.max(-lim, Math.min(lim, z)) };
 }

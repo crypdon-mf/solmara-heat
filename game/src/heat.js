@@ -97,15 +97,15 @@ export class Wanted {
       const hit = collideBuildings(this.city, u.x, u.z, u.radius);
       if (hit) { u.x += hit.px; u.z += hit.pz; u.speed *= 0.5; }
       const cl = clampToCity(u.x, u.z); u.x = cl.x; u.z = cl.z;
-      // ram the player's car / body
-      if (dist < u.radius + (ctx.playerCar ? ctx.playerCar.radius : 0.8)) {
+      // ram the player's car / body (cooldown so one touch is one hit)
+      u._ramT = (u._ramT || 0) - dt;
+      if (dist < u.radius + (ctx.playerCar ? ctx.playerCar.radius : 0.8) && u._ramT <= 0) {
+        u._ramT = 0.6;
         if (ctx.playerCar) {
-          damageCar(ctx.playerCar, 6 * dt * 10, ctx);
-          ctx.playerCar.speed *= 0.94;
-          if (Math.random() < dt * 2) {
-            ctx.sfx.crash(0.5);
-            ctx.particles.burst(px, 1, pz, 8, 4, 2, 0.5, 1, 0.8, 0.3);
-          }
+          damageCar(ctx.playerCar, 10, ctx);
+          ctx.playerCar.speed *= 0.9;
+          ctx.sfx.crash(0.5);
+          ctx.particles.burst(px, 1, pz, 8, 4, 2, 0.5, 1, 0.8, 0.3);
         } else {
           ctx.hurtHero?.(8, 'rammed by a police car');
         }
