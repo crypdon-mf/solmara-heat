@@ -3,10 +3,13 @@
 export class Input {
   constructor() {
     this.keys = new Set();
-    this.pressed = new Set();   // edge-triggered, consumed each frame
+    this.pressed = new Set();   // edge-triggered, filled by events
+    this.framePressed = new Set(); // snapshot for this frame (see beginFrame)
     this.mouseDX = 0; this.mouseDY = 0;
+    this.frameMouseDX = 0; this.frameMouseDY = 0;
     this.mouseDown = false;
     this.mouseClicked = false;
+    this.frameMouseClicked = false;
     this.touch = { fwd: false, back: false, left: false, right: false, brake: false, action: false, punch: false, shoot: false };
     this.autoFwd = false; // staged shots hold the throttle open
     this.pointerLocked = false;
@@ -41,7 +44,7 @@ export class Input {
     });
   }
   down(code) { return this.keys.has(code); }
-  wasPressed(code) { return this.pressed.has(code); }
+  wasPressed(code) { return this.framePressed.has(code); }
   axis() {
     // Returns { fwd: -1..1, steer: -1..1 } merged from keyboard + touch.
     let fwd = 0, steer = 0;
@@ -54,11 +57,17 @@ export class Input {
   }
   get handbrake() { return this.down('Space') || this.touch.brake; }
   get sprint() { return this.down('ShiftLeft') || this.down('ShiftRight'); }
-  endFrame() {
-    this.pressed.clear();
-    this.mouseDX = 0; this.mouseDY = 0;
-    this.mouseClicked = false;
+  // Snapshot edge-triggered input at the START of the frame and clear the
+  // live sets. Every event then belongs to exactly one frame's snapshot:
+  // nothing is lost no matter where in the frame the event lands.
+  beginFrame() {
+    this.framePressed = this.pressed;
+    this.pressed = new Set();
+    this.frameMouseDX = this.mouseDX; this.mouseDX = 0;
+    this.frameMouseDY = this.mouseDY; this.mouseDY = 0;
+    this.frameMouseClicked = this.mouseClicked; this.mouseClicked = false;
   }
+  endFrame() { /* kept for callers: beginFrame now owns the snapshot */ }
 }
 
 // Builds the on-screen touch controls (phones) and wires them into Input.

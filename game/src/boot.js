@@ -204,7 +204,7 @@ const clock = new THREE.Clock();
 let frameNo = 0;
 let shotWarmup = -1;
 let shotReady = false;
-window.__dbg = { get warmup() { return shotWarmup; }, get frameNo() { return frameNo; }, get mode() { return mode; } };
+window.__dbg = { get warmup() { return shotWarmup; }, get frameNo() { return frameNo; }, get mode() { return mode; }, get input() { return input; } };
 
 if (shot) {
   const W = { hero, jobs, wanted, city, life, stage, scene: stage.scene, allCars, camYaw: S.camYaw, mode: 'title', ctx: S, input };
@@ -221,12 +221,13 @@ if (shot) {
 
 function frame() {
   requestAnimationFrame(frame);
+  input.beginFrame();
   const _ft0 = performance.now();
   const dt = Math.min(0.05, clock.getDelta());
   // mouse orbit
-  if (input.mouseDX !== 0) {
-    if (hero.car) S.orbitOffset -= input.mouseDX * 0.0032;
-    else S.camYaw -= input.mouseDX * 0.0035;
+  if (input.frameMouseDX !== 0) {
+    if (hero.car) S.orbitOffset -= input.frameMouseDX * 0.0032;
+    else S.camYaw -= input.frameMouseDX * 0.0035;
   }
 
   if (mode === 'play') {
@@ -326,6 +327,5 @@ function frame() {
       window.__shotReady = true;
     }
   }
-  input.endFrame();
 }
 frame();
