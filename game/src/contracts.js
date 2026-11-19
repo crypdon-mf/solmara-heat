@@ -62,11 +62,12 @@ export function makeContracts(city, seed) {
     cashSpawned: false,
   };
 
-  // Fixed story places (metres).
+  // Fixed story places (metres). Every point sits on a road or at a
+  // block edge the player can actually reach — never inside a block.
   const PLACES = {
-    taxiRank: { x: -168, z: 8 },
-    hotel: { x: 23, z: -23 },
-    marinaLot: { x: -176, z: 46 },
+    taxiRank: { x: -184, z: 14 },
+    hotel: { x: 46, z: -23 },
+    marinaLot: { x: -180, z: 46 },
     garage: { x: 138, z: 23 },
     oldTownPickup: { x: -23, z: -138 },
     oldTownDrop: { x: 92, z: -92 },

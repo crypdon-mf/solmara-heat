@@ -83,8 +83,8 @@ function spawnParked() {
     world.parked.push(car);
     chosen.push(car);
   }
-  // The taxi for First Fare waits at the Marina rank.
-  const taxi = makeCar(rideSpec('taxi'), -168, 14, 0);
+  // The taxi for First Fare waits at the Marina rank, next to the spawn.
+  const taxi = makeCar(rideSpec('taxi'), -184, 14, 0);
   city.group.add(taxi.mesh);
   world.parked.push(taxi);
   return chosen;
@@ -111,7 +111,7 @@ spawnPickups();
 function toTitle() {
   world.screen = 'title';
   world.playerCar = null;
-  player.reset(-170, 20, Math.PI / 2);
+  player.reset(-182, 16, Math.PI / 2);
   player.group.visible = true;
   cops.clear();
   display.setTitle(loadSave());
@@ -125,7 +125,7 @@ function startGame(fresh) {
     clearSave();
   }
   world.screen = 'playing';
-  player.reset(-170, 20, Math.PI / 2);
+  player.reset(-182, 16, Math.PI / 2);
   player.group.visible = true;
   cops.clear();
   display.showOnly(null);
@@ -141,6 +141,7 @@ display.onRetry(() => startGame(false));
 display.onPlayAgain(() => startGame(true));
 display.onJobClick((id) => {
   if (world.screen !== 'playing') startGame(false);
+  world.paused = false; // the J list pauses the game; starting a job resumes it
   display.showOnly(null);
   if (contracts.start(world, id)) {
     display.banner(`Job started: ${contracts.JOBS.find((j) => j.id === id).name}`);

@@ -56,7 +56,7 @@ export function makeAvatar(city) {
   city.group.add(parts.group);
   const a = {
     ...parts,
-    x: -170, z: 20,          // Marina spawn, near the beach
+    x: -182, z: 16,          // Marina spawn, on the road by the taxi rank
     heading: Math.PI / 2,
     y: 0, vy: 0,
     health: TUNE.maxHealth,

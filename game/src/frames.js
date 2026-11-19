@@ -18,7 +18,7 @@ export function stageShot(world, stage, ctx) {
     // looking east at the Marina skyline, Jax in the foreground.
     world.screen = 'title';
     world.hour = 16.5;
-    player.reset(-170, 20, Math.PI * 0.7);
+    player.reset(-182, 16, Math.PI * 0.7);
     stage.setCamYaw(-Math.PI / 2);
     stage.setCamDist(45);
     stage.setCamPitch(0.5);
