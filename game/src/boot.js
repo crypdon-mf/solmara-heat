@@ -6,7 +6,7 @@ import { Rng } from './rng.js';
 import { Input, buildTouchControls } from './keys.js';
 import { Sfx } from './sfx.js';
 import { Stage } from './stage.js';
-import { buildCity, updateTrafficLights, setNightGlow, districtAt } from './metropolis.js';
+import { buildCity, updateTrafficLights, setNightGlow, districtAt, collideBuildings } from './metropolis.js';
 import { createCar, drivePlayer, damageCar, setHeadlights, syncCarMesh } from './autos.js';
 import { initStreetLife, stepTraffic, stepPeds } from './streetlife.js';
 import { createHero, stepHero, hurtHero } from './hero.js';
@@ -180,10 +180,18 @@ function updateCamera(dt) {
   const height = car ? TUNE.camHeight : 4.4;
   // camera sits behind the facing direction
   const fx = Math.sin(yaw), fz = Math.cos(yaw);
+  const look = new THREE.Vector3(tx - fx * 3, car ? 1.6 : 1.7, tz - fz * 3);
   const want = new THREE.Vector3(tx + fx * dist, height, tz + fz * dist);
+  // keep the camera out of buildings: pull it in toward the target and up
+  for (let i = 0; i < 3; i++) {
+    if (!collideBuildings(city, want.x, want.z, 2)) break;
+    want.lerp(look, 0.45);
+    want.y += 3.5;
+  }
+  want.y = Math.max(want.y, 2.2);
   camSmooth.lerp(want, 1 - Math.exp(-7 * dt));
   stage.camera.position.copy(camSmooth);
-  camTarget.set(tx - fx * 3, car ? 1.6 : 1.7, tz - fz * 3);
+  camTarget.copy(look);
   stage.camera.lookAt(camTarget);
   // aim data for the pistol (from the camera through the crosshair)
   S.camPos = { x: camSmooth.x, y: camSmooth.y, z: camSmooth.z };
@@ -199,7 +207,7 @@ let shotReady = false;
 window.__dbg = { get warmup() { return shotWarmup; }, get frameNo() { return frameNo; }, get mode() { return mode; } };
 
 if (shot) {
-  const W = { hero, jobs, wanted, city, life, stage, scene: stage.scene, allCars, camYaw: S.camYaw, mode: 'title', ctx: S };
+  const W = { hero, jobs, wanted, city, life, stage, scene: stage.scene, allCars, camYaw: S.camYaw, mode: 'title', ctx: S, input };
   shotWarmup = applyShot(shot, W);
   S.camYaw = W.camYaw;
   mode = W.mode;

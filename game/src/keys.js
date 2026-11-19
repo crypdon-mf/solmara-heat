@@ -8,6 +8,7 @@ export class Input {
     this.mouseDown = false;
     this.mouseClicked = false;
     this.touch = { fwd: false, back: false, left: false, right: false, brake: false, action: false, punch: false, shoot: false };
+    this.autoFwd = false; // staged shots hold the throttle open
     this.pointerLocked = false;
     this._onKeyDown = (e) => {
       if (e.repeat) return;
@@ -44,6 +45,7 @@ export class Input {
   axis() {
     // Returns { fwd: -1..1, steer: -1..1 } merged from keyboard + touch.
     let fwd = 0, steer = 0;
+    if (this.autoFwd) fwd = 1;
     if (this.down('KeyW') || this.down('ArrowUp') || this.touch.fwd) fwd += 1;
     if (this.down('KeyS') || this.down('ArrowDown') || this.touch.back) fwd -= 1;
     if (this.down('KeyA') || this.down('ArrowLeft') || this.touch.left) steer -= 1;

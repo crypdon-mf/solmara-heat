@@ -8,6 +8,7 @@ export function applyShot(shot, W) {
   const pl = city.places;
   if (shot === 'start') {
     // title vista: hero standing on the beach road at dusk, city behind
+    W.ctx.hour = 17.4;
     stage.setTime(17.4);
     hero.x = 0; hero.z = 150; hero.y = 0; hero.heading = Math.PI;
     W.camYaw = Math.PI;
@@ -15,30 +16,38 @@ export function applyShot(shot, W) {
     return 15;
   }
   if (shot === 'drive') {
+    W.ctx.hour = 10.5;
     stage.setTime(10.5);
-    const car = createCar(W.scene, 'sport', 0, 2 * 34, 0, 0xd21f3c);
+    // mid-block on the x=0 road (not on an intersection), cruising south
+    const car = createCar(W.scene, 'sport', 0, 85, 0, 0xd21f3c);
     car.ai = { parked: false };
     W.allCars.push(car);
     hero.car = car; car.isPlayer = true; car.speed = 22;
     hero.x = car.x; hero.z = car.z;
+    W.input.autoFwd = true; // keep cruising through the screenshot
     W.mode = 'play';
     return 15;
   }
   if (shot === 'chase') {
-    stage.setTime(18.6); // dusk chase, headlights on
-    const car = createCar(W.scene, 'muscle', -34, 0, Math.PI / 2, 0x1f1f24);
+    W.ctx.hour = 17.9; // sunset: orange sky, headlights + lamps on
+    stage.setTime(17.9);
+    // mid-block on the x=-34 road, cruising south, cops behind
+    const car = createCar(W.scene, 'muscle', -34, 17, 0, 0x1f1f24);
     car.ai = { parked: false };
     W.allCars.push(car);
     hero.car = car; car.isPlayer = true; car.speed = 24;
     hero.x = car.x; hero.z = car.z;
     wanted.add(65, 'staged chase');
+    W.input.autoFwd = true;
     W.mode = 'play';
     return 45; // let police spawn and close in
   }
   if (shot === 'mission') {
+    W.ctx.hour = 12.0;
     stage.setTime(12.0);
     hero.x = pl.bank.x + 8; hero.z = pl.bank.z + 10; hero.heading = Math.PI;
     hero.mag = 12; hero.reserve = 48;
+    W.camYaw = 0.67; // camera behind Jax, bank + beacon in frame
     jobs.start(7, W.ctx); // The Big One: beacon on the bank
     W.mode = 'play';
     return 15;
