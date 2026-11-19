@@ -4,6 +4,8 @@
 // seed always gives the same frame. The caller paints a few frames and then
 // sets window.__shotReady.
 import { CAR_TUNING } from './config.js';
+import { makeCar } from './vehicles.js';
+import { spawnPoliceCar } from './police.js';
 
 export function stageShot(name, G, THREE) {
   const scene = name || 'start';
@@ -44,19 +46,30 @@ export function stageShot(name, G, THREE) {
     car.mesh.rotation.y = car.heading;
     G.player.mesh.visible = false;
     G.player.x = car.x; G.player.z = car.z; G.player.heading = car.heading;
-    G.wanted.heat = 45;
+    G.wanted.heat = 35;
     G.wanted.stars = 2;
+    // Two police cars right behind, lights on, so the chase reads at a glance.
+    for (let i = 0; i < 2; i += 1) {
+      const cop = spawnPoliceCar(G, THREE);
+      cop.x = 52 + (i === 0 ? -4 : 4);
+      cop.z = -60 + 14 + i * 7;
+      cop.heading = Math.PI;
+      cop.speed = 20;
+      cop.mesh.position.set(cop.x, 0, cop.z);
+      cop.mesh.rotation.y = cop.heading;
+    }
     G.cameraOrbit.yaw = null;
     return { screen: 'play' };
   }
-  // mission: on foot at the marina, gold beacon marking the red sportscar.
-  G.player.x = -176;
-  G.player.z = 196;
-  G.player.heading = Math.PI * 0.9;
+  // mission: on foot south-east of the marina, looking north-west at it —
+  // the gold beacon and the red sportscar in the lot are both in frame.
+  G.player.x = -156;
+  G.player.z = 230;
+  G.player.heading = -2.27;
   G.player.mesh.position.set(G.player.x, 0, G.player.z);
   G.player.mesh.rotation.y = G.player.heading;
   G.player.mesh.visible = true;
-  G.cameraOrbit.yaw = G.player.heading + Math.PI + 0.5;
+  G.cameraOrbit.yaw = G.player.heading + Math.PI;
   G.mission.active = true;
   G.mission.def = { id: 2, name: 'Hot Wheels', reward: 400, time: 240 };
   G.mission.objective = 'Steal the red sportscar at the marina';
@@ -68,5 +81,9 @@ export function stageShot(name, G, THREE) {
     G.markerMesh.position.set(-182, 0.15, 208);
     G.markerMesh.visible = true;
   }
+  // The prize itself: the red sportscar parked in the marina lot.
+  const prize = makeCar(THREE, G.renderer.scene, -164, 208, Math.PI / 2, 0xd8433c, 'sport');
+  prize.parked = true;
+  G.cars.push(prize);
   return { screen: 'play' };
 }

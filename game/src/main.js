@@ -374,6 +374,11 @@ function runShot(name) {
   } else {
     setScreen('play');
   }
+  // Snap the smoothed camera onto the staged subject before the first
+  // paint, or the first frames would still be travelling from the origin.
+  for (let i = 0; i < 90; i += 1) {
+    renderer.updateCamera(G.player.inCar ? G.player.car : G.player, G.cameraOrbit.yaw, G.cameraOrbit.pitch, G.player.inCar, 0.016, G.time);
+  }
   let painted = 0;
   function paint() {
     renderer.updateCamera(G.player.inCar ? G.player.car : G.player, G.cameraOrbit.yaw, G.cameraOrbit.pitch, G.player.inCar, 0.016, G.time);

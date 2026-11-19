@@ -31,7 +31,7 @@ function distTo(G, x, z) {
 
 // Landmark buildings are big: the player reaches their edge, not their
 // centre, so a building marker counts as reached from 18 m out.
-const LANDMARK_RADIUS = 18;
+const LANDMARK_RADIUS = 20;
 
 function finish(G, ok) {
   const m = G.mission;
@@ -76,8 +76,9 @@ export function startMission(G, id) {
   } else if (id === 2) {
     m.objective = 'Steal the red sportscar at the marina';
     setMarkerOn(G, L.marina.x, L.marina.z);
-    // The prize: a red sportscar parked in the marina lot.
-    const car = makeCar(G.THREE, G.renderer.scene, L.marina.x + 6, L.marina.z + 4, Math.PI / 2, 0xd8433c, 'sport');
+    // The prize: a red sportscar parked in the marina lot, clear of the
+    // marina building itself so the player can actually reach its door.
+    const car = makeCar(G.THREE, G.renderer.scene, L.marina.x + 18, L.marina.z, Math.PI / 2, 0xd8433c, 'sport');
     car.parked = true;
     car.missionCar = true;
     G.cars.push(car);
@@ -146,7 +147,7 @@ export function updateMissions(G, dt) {
         m.stage = 1;
         m.objective = 'Cash grabbed! Escape the 4-star chase — reach the boat at the pier';
         setMarkerOn(G, L.pier.x, L.pier.z);
-        addHeat(G, 85, 'the bank alarm');
+        addHeat(G, 75, 'the bank alarm');
         if (G.hud) G.hud.toast('You grabbed the cash. Four stars — run for the pier!');
       }
     } else if (distTo(G, L.pier.x, L.pier.z) < 9) {
