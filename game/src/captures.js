@@ -45,9 +45,10 @@ export function applyShot(shot, W) {
   if (shot === 'mission') {
     W.ctx.hour = 12.0;
     stage.setTime(12.0);
-    hero.x = pl.bank.x + 8; hero.z = pl.bank.z + 10; hero.heading = Math.PI;
+    // on the open road just south of the bank intersection, beacon dead ahead
+    hero.x = pl.bank.x; hero.z = pl.bank.z + 8; hero.heading = Math.PI;
     hero.mag = 12; hero.reserve = 48;
-    W.camYaw = 0.67; // camera behind Jax, bank + beacon in frame
+    W.camYaw = 0; // camera behind Jax, looking north at the bank + beacon
     jobs.start(7, W.ctx); // The Big One: beacon on the bank
     W.mode = 'play';
     return 15;
