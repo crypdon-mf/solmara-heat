@@ -454,8 +454,9 @@ function frame(now) {
   }
 
   // Camera follows the player (or the car) unless the title orbit rules.
+  // The title orbits the Marina, looking west over the beach at sunset.
   const focus = world.screen === 'title'
-    ? { x: 0, z: 0, y: 0 }
+    ? { x: -160, z: 0, y: 0 }
     : (world.playerCar || player);
   stage.updateCamera(dt, focus, input, city.colliders);
   stage.updateParticles(dt);
@@ -467,10 +468,19 @@ function frame(now) {
   }
 }
 
-// Shot staging (headless screenshots) runs before the first frame.
-if (SHOT) stageShot(world, stage, { shot: SHOT, seed: SEED, display, contracts, cops, player, traffic });
-
-toTitle();
+// Shot staging (headless screenshots) runs before the first frame and
+// owns the screen for its scene; normal boots go to the title screen.
+if (SHOT) {
+  stageShot(world, stage, { shot: SHOT, seed: SEED, display, contracts, cops, player, traffic });
+  if (world.screen === 'title') {
+    display.setTitle(loadSave());
+    display.showOnly('title');
+  } else {
+    display.showOnly(null);
+  }
+} else {
+  toTitle();
+}
 window.addEventListener('resize', () => stage.resize());
 window.__solmara = { world, stage, player, cops, contracts, traffic, city };
 requestAnimationFrame(frame);

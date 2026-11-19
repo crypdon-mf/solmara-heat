@@ -82,6 +82,6 @@ export const SKY_KEYS = [
   { hour: 0,  top: 0x060a18, low: 0x0d1526, sun: 0x1a2a4a, fog: 0x0a1220 },
   { hour: 6,  top: 0x7d9cc4, low: 0xf2b98a, sun: 0xffc98a, fog: 0xcfd8e2 },
   { hour: 12, top: 0x3f8fd2, low: 0xbfe3f2, sun: 0xfff2c8, fog: 0xcfe4ee },
-  { hour: 18, top: 0x3a4a7a, low: 0xf28a5a, sun: 0xff9a4a, fog: 0xd8a88a },
+  { hour: 18, top: 0x4a5a8e, low: 0xf28a5a, sun: 0xff9a4a, fog: 0xd8a88a },
   { hour: 24, top: 0x060a18, low: 0x0d1526, sun: 0x1a2a4a, fog: 0x0a1220 },
 ];

@@ -56,7 +56,7 @@ export function buildCity(seed) {
   // ---- ground: asphalt base, then sidewalks and the beach ----
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(560, 560),
-    new THREE.MeshLambertMaterial({ color: 0x33363c })
+    new THREE.MeshLambertMaterial({ color: 0x3a3e45 })
   );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
@@ -81,7 +81,7 @@ export function buildCity(seed) {
   group.add(water);
 
   // ---- roads: lighter asphalt strips with centre dashes ----
-  const roadMat = new THREE.MeshLambertMaterial({ color: 0x23262b });
+  const roadMat = new THREE.MeshLambertMaterial({ color: 0x2f333a });
   const dashMat = new THREE.MeshBasicMaterial({ color: 0xd8c84a });
   for (let n = -4; n <= 4; n++) {
     const line = n * PITCH;

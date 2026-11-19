@@ -156,6 +156,8 @@ export function makeStage(container, city) {
     renderer, scene, camera, sun,
     get camYaw() { return camYaw; },
     setCamYaw(y) { camYaw = y; },
+    setCamDist(d) { camDist = d; },
+    setCamPitch(p) { camPitch = p; },
     puff, updateCamera, updateSky, followSun, updateParticles,
     resize() {
       const w = container.clientWidth, h = container.clientHeight;

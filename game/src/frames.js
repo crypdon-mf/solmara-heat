@@ -14,12 +14,14 @@ export function stageShot(world, stage, ctx) {
   world.paused = false;
 
   if (shot === 'start') {
-    // Title screen over the city at golden hour: Jax on foot by the
-    // Marina, Downtown towers behind him.
+    // Title screen over the city at golden hour: camera over the beach
+    // looking east at the Marina skyline, Jax in the foreground.
     world.screen = 'title';
-    world.hour = 17.4;
+    world.hour = 16.5;
     player.reset(-170, 20, Math.PI * 0.7);
-    stage.setCamYaw(2.4);
+    stage.setCamYaw(-Math.PI / 2);
+    stage.setCamDist(45);
+    stage.setCamPitch(0.5);
   } else if (shot === 'drive') {
     // Downtown drive: Jax in the red Vela GT, mid-traffic, afternoon sun.
     world.hour = 15.2;
@@ -32,9 +34,10 @@ export function stageShot(world, stage, ctx) {
     player.group.visible = false;
     stage.setCamYaw(Math.PI);
   } else if (shot === 'chase') {
-    // Three-star chase at dusk: interceptor on Jax's tail, sirens lit.
+    // Three-star chase at dusk: Jax in the blue sedan, two interceptors
+    // closing in ahead of him, sirens flashing, windows lit.
     world.hour = 19.1;
-    const car = world.parked.find((c) => c.spec.id === 'muscle')
+    const car = world.parked.find((c) => c.spec.id === 'sedan')
       || world.parked[0];
     car.x = 0; car.z = 0; car.heading = Math.PI / 2;
     car.speed = 16; car.vx = 16; car.vz = 0;
@@ -42,19 +45,17 @@ export function stageShot(world, stage, ctx) {
     world.playerCar = car;
     player.group.visible = false;
     cops.setStars(3);
-    // Pull two cruisers in close behind for the frame.
-    const c1 = cops.cruisers[0], c2 = cops.cruisers[1];
-    if (c1) { c1.x = -14; c1.z = -6; c1.heading = Math.PI / 2; c1.mesh.position.set(-14, 0, -6); }
-    if (c2) { c2.x = -10; c2.z = 10; c2.heading = Math.PI / 2; c2.mesh.position.set(-10, 0, 10); }
+    cops.placeCruisers([[16, -8, Math.PI / 2], [22, 9, Math.PI / 2]]);
     stage.setCamYaw(Math.PI / 2 + Math.PI);
   } else if (shot === 'mission') {
-    // The Big One: Jax on foot outside the bank, beacon over the door.
+    // The Big One: Jax on foot south of the bank, facing the beacon
+    // over the door, camera behind him looking north up the street.
     world.hour = 16.0;
-    player.reset(38, 60, Math.PI);
+    player.reset(46, 58, Math.PI);
     player.group.visible = true;
     world.playerCar = null;
     contracts.start(world, 'bigone');
-    stage.setCamYaw(2.6);
+    stage.setCamYaw(0);
   }
 
   // The app's frame loop counts rendered frames in shot mode and raises

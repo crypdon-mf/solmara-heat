@@ -319,8 +319,17 @@ export function makeContracts(city, seed) {
     }
   }
 
+  // Live fields are exposed through getters: the returned object must
+  // always reflect the internal state, not a stale spread copy.
   return {
-    ...state,
+    get active() { return state.active; },
+    get done() { return state.done; },
+    set done(v) { state.done = v; },
+    get markerPos() { return state.markerPos; },
+    get objective() { return state.objective; },
+    get distance() { return state.distance; },
+    get timer() { return state.timer; },
+    get phase() { return state.phase; },
     JOBS,
     PLACES,
     start, update,

@@ -121,6 +121,18 @@ export function makeCops(city, seed) {
       heat = stars;
       unseenFor = 0;
     },
+    // Spawn cruisers immediately at the given [x, z, heading] spots
+    // (used by the staged chase screenshot; the live loop spawns at edges).
+    placeCruisers(spots) {
+      while (cruisers.length < spots.length) spawnCruiser();
+      spots.forEach((s, i) => {
+        const c = cruisers[i];
+        c.x = s[0]; c.z = s[1]; c.heading = s[2];
+        c.vx = 0; c.vz = 0; c.speed = 0;
+        c.mesh.position.set(s[0], 0, s[1]);
+        c.mesh.rotation.y = s[2];
+      });
+    },
     clear() {
       stars = 0; heat = 0; unseenFor = 0;
       for (const c of cruisers) city.group.remove(c.mesh);
