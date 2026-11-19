@@ -187,6 +187,17 @@ export function shootPistol(G) {
   } else {
     addHeat(G, 6, 'gunshot');
   }
+  // Flash the tracer from the muzzle to the hit point (or 30 m out).
+  if (G.tracer) {
+    const endX = hit ? hit.x : p.x + fx * 30;
+    const endZ = hit ? hit.z : p.z + fz * 30;
+    const pos = G.tracer.geometry.attributes.position;
+    pos.setXYZ(0, p.x, 1.4, p.z);
+    pos.setXYZ(1, endX, hit ? 1.2 : 1.4, endZ);
+    pos.needsUpdate = true;
+    G.tracer.visible = true;
+    G.tracerTimer = 0.09;
+  }
   scarePeds(G.peds, p.x, p.z, 26);
 }
 

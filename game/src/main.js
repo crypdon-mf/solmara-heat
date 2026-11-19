@@ -87,7 +87,7 @@ if (saved) {
   G.cash = saved.cash ?? START_CASH;
   G.save.bestStars = saved.bestStars ?? 0;
   G.save.playtime = saved.playtime ?? 0;
-  if (Array.isArray(saved.missionsDone)) G.mission.doneIds = saved.missionsDone;
+  if (Array.isArray(saved.missionsDone)) { G.mission.doneIds = saved.missionsDone; G.mission.doneCount = saved.missionsDone.length; }
   else if (typeof saved.missionsDone === 'number') G.mission.doneCount = saved.missionsDone;
 }
 hud.setTitleStats(saved);
@@ -153,6 +153,30 @@ export { G };
 window.__G = G; // test/debug handle; harmless in play
 window.__missions = { start: (id) => startMission(G, id) };
 
+// Ammo pickup at the gun shop: a spinning gold crate that refills the
+// pistol, then takes a minute to restock.
+{
+  const shop = city.landmarks.gunShop;
+  const crate = new THREE.Mesh(
+    new THREE.BoxGeometry(1.2, 1.2, 1.2),
+    new THREE.MeshLambertMaterial({ color: 0xffd23c, emissive: 0x8a6d00 }),
+  );
+  crate.position.set(shop.x + 12, 0.8, shop.z + 10);
+  renderer.scene.add(crate);
+  G.ammoPickup = { x: shop.x + 12, z: shop.z + 10, mesh: crate, available: true, timer: 0 };
+}
+// Pistol tracer: one reusable gold line, flashed for a blink after each shot.
+{
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
+  const tracer = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffe97a }));
+  tracer.visible = false;
+  tracer.frustumCulled = false;
+  renderer.scene.add(tracer);
+  G.tracer = tracer;
+  G.tracerTimer = 0;
+}
+
 // On-foot movement, entering/exiting cars, shooting and heat live in
 // player.js now; main.js only wires them into the loop.
 
@@ -214,6 +238,34 @@ function step(dt, actions) {
       separateCars(G.cars[i], G.cars[j]);
     }
   }
+
+  // Ammo pickup restock and tracer fade.
+  const ap = G.ammoPickup;
+  if (ap) {
+    if (!ap.available) {
+      ap.timer -= dt;
+      if (ap.timer <= 0) { ap.available = true; ap.mesh.visible = true; }
+    } else {
+      ap.mesh.rotation.y += dt * 2;
+      ap.mesh.position.y = 0.8 + Math.sin(G.time * 3) * 0.15;
+      if (!p.inCar && Math.hypot(p.x - ap.x, p.z - ap.z) < 3.5) {
+        p.ammo = 12;
+        p.reserveAmmo = 120;
+        ap.available = false;
+        ap.timer = 60;
+        ap.mesh.visible = false;
+        audio.pickup();
+        hud.toast('Ammo restocked — 12 in the mag, 120 in reserve.');
+      }
+    }
+  }
+  if (G.tracerTimer > 0) {
+    G.tracerTimer -= dt;
+    if (G.tracerTimer <= 0) G.tracer.visible = false;
+  }
+  // Autosave every 15 seconds of play.
+  G.saveTimer = (G.saveTimer || 0) + dt;
+  if (G.saveTimer > 15) { G.saveTimer = 0; writeSave(); }
 
   if (G.beacon.visible) {
     G.beacon.rotation.y += dt;
