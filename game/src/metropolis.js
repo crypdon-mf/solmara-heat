@@ -117,15 +117,7 @@ export function buildCity(stage, seed) {
     mk(P * 0 + 8, half * 2, k * P, 0, 0, half / 8);            // north-south road
     mk(8, half * 2, 0, k * P, Math.PI / 2, half / 8);          // east-west road
   }
-  // crosswalks at main intersections
-  const crossMat = new THREE.MeshStandardMaterial({ color: 0xdfe3e8, roughness: 0.9 });
-  for (let i = -B; i <= B; i += 2) for (let j = -B; j <= B; j += 2) {
-    for (let s = 0; s < 5; s++) {
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.08, 3.4), crossMat);
-      stripe.position.set(i * P - 5.5 + s * 2.2, 0.08, j * P + 5.2);
-      scene.add(stripe);
-    }
-  }
+  // --- roads: crosswalks are painted into the road texture; no extra meshes ---
 
   // --- blocks: sidewalks + buildings ---
   const roofMat = new THREE.MeshStandardMaterial({ color: 0x3a3f46, roughness: 1 });
@@ -160,11 +152,13 @@ export function buildCity(stage, seed) {
       mesh.castShadow = true; mesh.receiveShadow = true;
       scene.add(mesh);
       if (tower) city.buildingMats.push(glassMat);
-      // roof furniture
-      const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 0.5, 1.2, d * 0.4), roofMat);
-      roof.position.set(x, h + 0.9, z); roof.castShadow = true;
-      scene.add(roof);
-      if (rng.chance(0.4)) {
+      // roof furniture — only on taller buildings, to keep draw calls down
+      if (h > 16) {
+        const roof = new THREE.Mesh(new THREE.BoxGeometry(w * 0.5, 1.2, d * 0.4), roofMat);
+        roof.position.set(x, h + 0.9, z); roof.castShadow = true;
+        scene.add(roof);
+      }
+      if (rng.chance(0.2)) {
         const tank = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 2.6, 8), new THREE.MeshStandardMaterial({ color: 0x7a5a3a, roughness: 1 }));
         tank.position.set(x + w * 0.25, h + 1.6, z - d * 0.2); tank.castShadow = true;
         scene.add(tank);
@@ -180,20 +174,20 @@ export function buildCity(stage, seed) {
       }
       city.colliders.push({ x0: x - w / 2 - 0.4, z0: z - d / 2 - 0.4, x1: x + w / 2 + 0.4, z1: z + d / 2 + 0.4 });
     }
-    // corner palms + lamps on some blocks
-    if (rng.chance(0.55)) makePalm(scene, cx + (P / 2 - 7), cz + (P / 2 - 7), rng);
-    if (rng.chance(0.4)) makePalm(scene, cx - (P / 2 - 7), cz - (P / 2 - 7), rng);
+    // corner palms on some blocks (beach + marina get more)
+    if (rng.chance(dist === 'beach' || dist === 'marina' ? 0.7 : 0.3)) makePalm(scene, cx + (P / 2 - 7), cz + (P / 2 - 7), rng);
+    if (rng.chance(0.22)) makePalm(scene, cx - (P / 2 - 7), cz - (P / 2 - 7), rng);
   }
 
   // --- street lamps along main roads ---
   const poleMat = new THREE.MeshStandardMaterial({ color: 0x2a2d33, roughness: 0.7, metalness: 0.5 });
-  for (let k = -B; k <= B; k++) for (let j = -B; j <= B; j += 2) {
+  for (let k = -B; k <= B; k++) for (let j = -B; j <= B; j += 4) {
     const lamp = makeLamp(scene, poleMat, k * P + 5.5, j * P + 5.5);
     city.lamps.push(lamp);
   }
 
-  // --- traffic lights at every other intersection ---
-  for (let i = -B; i <= B; i += 2) for (let j = -B; j <= B; j += 2) {
+  // --- traffic lights at main intersections only ---
+  for (let i = -B; i <= B; i += 4) for (let j = -B; j <= B; j += 4) {
     city.lights.push(makeTrafficLight(scene, i * P, j * P, rng));
   }
 
@@ -246,15 +240,13 @@ function makePalm(scene, x, z, rng) {
   );
   trunk.position.y = 3.25; trunk.castShadow = true;
   g.add(trunk);
-  const leafMat = new THREE.MeshStandardMaterial({ color: 0x3f9e4d, roughness: 1 });
-  for (let i = 0; i < 6; i++) {
-    const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.9, 3.4, 4), leafMat);
-    const a = (i / 6) * Math.PI * 2;
-    leaf.position.set(Math.cos(a) * 1.2, 6.8, Math.sin(a) * 1.2);
-    leaf.rotation.z = Math.cos(a) * 1.1;
-    leaf.rotation.x = -Math.sin(a) * 1.1;
-    g.add(leaf);
-  }
+  // one spiky foliage crown instead of six separate fronds
+  const crown = new THREE.Mesh(
+    new THREE.ConeGeometry(2.6, 2.6, 8),
+    new THREE.MeshStandardMaterial({ color: 0x3f9e4d, roughness: 1 }),
+  );
+  crown.position.y = 7.4; crown.castShadow = true;
+  g.add(crown);
   g.position.set(x, 0, z);
   g.rotation.y = rng.float(0, Math.PI * 2);
   scene.add(g);

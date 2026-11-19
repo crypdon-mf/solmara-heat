@@ -12,7 +12,7 @@ export function applyShot(shot, W) {
     hero.x = 0; hero.z = 150; hero.y = 0; hero.heading = Math.PI;
     W.camYaw = Math.PI;
     W.mode = 'title';
-    return 40;
+    return 15;
   }
   if (shot === 'drive') {
     stage.setTime(10.5);
@@ -22,7 +22,7 @@ export function applyShot(shot, W) {
     hero.car = car; car.isPlayer = true; car.speed = 22;
     hero.x = car.x; hero.z = car.z;
     W.mode = 'play';
-    return 50;
+    return 15;
   }
   if (shot === 'chase') {
     stage.setTime(18.6); // dusk chase, headlights on
@@ -33,7 +33,7 @@ export function applyShot(shot, W) {
     hero.x = car.x; hero.z = car.z;
     wanted.add(65, 'staged chase');
     W.mode = 'play';
-    return 90; // let police spawn and close in
+    return 45; // let police spawn and close in
   }
   if (shot === 'mission') {
     stage.setTime(12.0);
@@ -41,7 +41,7 @@ export function applyShot(shot, W) {
     hero.mag = 12; hero.reserve = 48;
     jobs.start(7, W.ctx); // The Big One: beacon on the bank
     W.mode = 'play';
-    return 50;
+    return 15;
   }
   return 0;
 }

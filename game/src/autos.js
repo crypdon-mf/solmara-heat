@@ -38,18 +38,15 @@ export function buildCarMesh(kind, colorOverride) {
     cabin.position.set(0, 1.18, -len * 0.06); cabin.castShadow = true;
     g.add(cabin);
   }
-  // wheels
+  // wheels (tyre only — hub is painted by the tyre shading)
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0c0d10, roughness: 0.9 });
-  const hubMat = chrome;
   const wheels = [];
   const wx = w / 2 - 0.08, wz = len / 2 - 0.85;
   for (const [sx, sz] of [[-wx, wz], [wx, wz], [-wx, -wz], [wx, -wz]]) {
     const wg = new THREE.Group();
     const tyre = new THREE.Mesh(WHEEL_GEO, wheelMat);
     tyre.rotation.z = Math.PI / 2; tyre.castShadow = true;
-    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.3, 8), hubMat);
-    hub.rotation.z = Math.PI / 2;
-    wg.add(tyre, hub);
+    wg.add(tyre);
     wg.position.set(sx, 0.36, sz);
     g.add(wg);
     wheels.push(wg);

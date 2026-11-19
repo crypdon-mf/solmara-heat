@@ -49,6 +49,7 @@ S.onJobFailed = () => {};
 // ---------- world ----------
 const canvas = document.getElementById('game');
 const stage = new Stage(canvas);
+window.__stage = stage; // debug probe: renderer.info
 S.particles = stage.particles;
 const city = buildCity(stage, seed);
 S.city = city;
@@ -192,8 +193,10 @@ function updateCamera(dt) {
 
 // ---------- main loop ----------
 const clock = new THREE.Clock();
+let frameNo = 0;
 let shotWarmup = -1;
 let shotReady = false;
+window.__dbg = { get warmup() { return shotWarmup; }, get frameNo() { return frameNo; }, get mode() { return mode; } };
 
 if (shot) {
   const W = { hero, jobs, wanted, city, life, stage, scene: stage.scene, allCars, camYaw: S.camYaw, mode: 'title', ctx: S };
@@ -210,6 +213,7 @@ if (shot) {
 
 function frame() {
   requestAnimationFrame(frame);
+  const _ft0 = performance.now();
   const dt = Math.min(0.05, clock.getDelta());
   // mouse orbit
   if (input.mouseDX !== 0) {
@@ -221,7 +225,7 @@ function frame() {
     S.time += dt; S.playSeconds += dt;
     S.hour += dt * 24 / TUNE.dayLengthSec;
     stage.setTime(S.hour);
-    stage.water.position.y = -0.4 + Math.sin(S.time * 0.6) * 0.12;
+    city.water.position.y = -0.4 + Math.sin(S.time * 0.6) * 0.12;
     const isNight = stage.isNight;
     if (isNight !== nightOn) { nightOn = isNight; setNightGlow(city, isNight); }
     updateTrafficLights(city, dt);
@@ -296,7 +300,16 @@ function frame() {
   stage.particles.update(dt);
   if (mode === 'play') updateCamera(dt);
   stage.followShadow(S.playerX, S.playerZ);
+  // shadows refresh every 5th frame — the city is mostly static
+  frameNo++;
+  if (frameNo % 5 === 0) stage.renderer.shadowMap.needsUpdate = true;
+  const _ft1 = performance.now();
   stage.render();
+  const _ft2 = performance.now();
+  (window.__dbg.times = window.__dbg.times || []).push(Math.round(_ft2 - _ft1));
+  if (window.__dbg.times.length > 40) window.__dbg.times.shift();
+  window.__dbg.updateMs = window.__dbg.updateMs == null ? _ft1 - _ft0 : window.__dbg.updateMs * 0.9 + (_ft1 - _ft0) * 0.1;
+  window.__dbg.renderMs = window.__dbg.renderMs == null ? _ft2 - _ft1 : window.__dbg.renderMs * 0.9 + (_ft2 - _ft1) * 0.1;
 
   if (shotWarmup > 0) {
     shotWarmup--;

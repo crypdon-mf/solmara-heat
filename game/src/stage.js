@@ -5,11 +5,18 @@ import { TUNE } from './tuning.js';
 
 export class Stage {
   constructor(canvas) {
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    // Staged screenshots render in software GL — antialiasing there costs
+    // seconds per frame, so shot mode renders without MSAA; real browsers
+    // (the game as shipped) keep it.
+    const shotMode = new URLSearchParams(location.search).has('shot');
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !shotMode });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    // Shot mode renders in software GL: small shadow map + single-tap
+    // shadows keep it tractable; real browsers get the full PCF map.
+    this.renderer.shadowMap.type = shotMode ? THREE.BasicShadowMap : THREE.PCFShadowMap;
+    this.renderer.shadowMap.autoUpdate = false; // refreshed every few frames by boot
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
 
@@ -22,9 +29,9 @@ export class Stage {
     // Sun with a shadow camera that follows the player.
     this.sun = new THREE.DirectionalLight(0xfff2d8, 2.6);
     this.sun.castShadow = true;
-    this.sun.shadow.mapSize.set(2048, 2048);
+    this.sun.shadow.mapSize.set(shotMode ? 512 : 1024, shotMode ? 512 : 1024);
     const sc = this.sun.shadow.camera;
-    sc.left = -90; sc.right = 90; sc.top = 90; sc.bottom = -90;
+    sc.left = -70; sc.right = 70; sc.top = 70; sc.bottom = -70;
     sc.near = 10; sc.far = 420;
     this.sun.shadow.bias = -0.0006;
     this.scene.add(this.sun, this.sun.target);
