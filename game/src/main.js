@@ -17,6 +17,7 @@ import { stageShot } from './shots.js';
 import { spawnTraffic, updateTraffic } from './traffic.js';
 import { spawnPedestrians, updatePedestrians } from './pedestrians.js';
 import { buildPlayerMesh, stepOnFoot, nearestCar, enterCar, exitCar, punch, addHeat } from './player.js';
+import { updatePolice, respawn } from './police.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.25;
@@ -77,6 +78,8 @@ const G = {
 G.hud = hud;
 G.audio = audio;
 G.city = city;
+G.THREE = THREE;
+G.renderer = renderer;
 
 const saved = readSave();
 if (saved) {
@@ -199,6 +202,8 @@ function step(dt, actions) {
 
   updateTraffic(G.traffic, rng, dt, p.inCar ? p.car : null);
   updatePedestrians(G.peds, rng, dt, G.time);
+  updatePolice(G, dt);
+  if (G.player.health <= 0 && G.screen === 'play') onWasted();
   // Parked cars the player bumped stay put; traffic separation runs in the
   // traffic update's own pass via the shared car list in step collisions.
   for (let i = 0; i < G.cars.length; i += 1) {
@@ -207,11 +212,6 @@ function step(dt, actions) {
     }
   }
 
-  // Heat decays when the player is out of sight (police module refines this).
-  if (G.wanted.heat > 0 && G.police.cars.length === 0) {
-    G.wanted.heat = Math.max(0, G.wanted.heat - WANTED.decayPerSecond * dt);
-    if (G.wanted.heat === 0) G.wanted.stars = 0;
-  }
   if (G.beacon.visible) {
     G.beacon.rotation.y += dt;
     G.markerMesh.scale.setScalar(1 + Math.sin(G.time * 4) * 0.12);
@@ -221,6 +221,23 @@ function step(dt, actions) {
 }
 
 // ---- screens / loop ------------------------------------------------------
+function onBusted() {
+  const lost = respawn(G, 'busted');
+  hud.setOver('busted', lost);
+  audio.fail();
+  writeSave();
+  setScreen('over');
+}
+function onWasted() {
+  const lost = respawn(G, 'wasted');
+  hud.setOver('wasted', lost);
+  audio.fail();
+  writeSave();
+  setScreen('over');
+}
+G.onBusted = onBusted;
+G.onWasted = onWasted;
+
 const hudEl = document.getElementById('hud');
 function setScreen(name) {
   G.screen = name;
