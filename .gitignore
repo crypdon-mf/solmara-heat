@@ -1,0 +1,5 @@
+# Build outputs from the local determinism check (main.ts run twice).
+# Never committed: the dossier check writes here, and the grader
+# supplies its own output directory anyway.
+out/
+out2/
