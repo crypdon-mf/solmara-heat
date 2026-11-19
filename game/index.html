@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>SOLMARA HEAT — an open-world crime game</title>
+<style>
+  :root { --accent: #ff5a3c; --gold: #ffd23f; --ink: #e8ecf2; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0e16;
+    font-family: 'Segoe UI', system-ui, sans-serif; color: var(--ink); }
+  #game { position: fixed; inset: 0; }
+  #game canvas { display: block; }
+  .hidden { display: none !important; }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #hud-top-left { position: absolute; top: 14px; left: 16px; }
+  #hud-cash { font-size: 30px; font-weight: 800; color: #7dff8a;
+    text-shadow: 0 2px 6px rgba(0,0,0,.7); letter-spacing: 1px; }
+  #hud-health { width: 190px; height: 10px; background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.35); border-radius: 5px; margin-top: 6px; overflow: hidden; }
+  #hud-health-fill { height: 100%; width: 100%; background: #37b24d; transition: width .2s; }
+  #hud-stars { font-size: 24px; letter-spacing: 3px; margin-top: 4px;
+    text-shadow: 0 2px 6px rgba(0,0,0,.8); }
+  #hud-ammo { font-size: 15px; margin-top: 4px; color: #ffd23f;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  #hud-top-right { position: absolute; top: 14px; right: 16px; text-align: right; }
+  #minimap { width: 168px; height: 168px; border: 2px solid rgba(255,255,255,.35);
+    border-radius: 8px; background: rgba(10,14,22,.6); }
+  #hud-speed { font-size: 30px; font-weight: 800; margin-top: 6px;
+    text-shadow: 0 2px 6px rgba(0,0,0,.8); }
+  #hud-objective { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%);
+    max-width: 640px; text-align: center; font-size: 17px; font-weight: 600;
+    background: rgba(10,14,22,.72); border: 1px solid rgba(255,255,255,.22);
+    padding: 9px 18px; border-radius: 8px; }
+  #hud-timer { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%);
+    font-size: 22px; font-weight: 800; color: var(--gold); text-shadow: 0 2px 6px rgba(0,0,0,.8); }
+  #hud-banner { position: absolute; left: 50%; top: 84px; transform: translateX(-50%);
+    font-size: 19px; font-weight: 700; background: rgba(255,90,60,.88); color: #fff;
+    padding: 10px 22px; border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,.5);
+    max-width: 80vw; text-align: center; }
+  #hud-mute { position: absolute; right: 16px; bottom: 16px; pointer-events: auto;
+    width: 46px; height: 46px; font-size: 22px; background: rgba(10,14,22,.7);
+    border: 1px solid rgba(255,255,255,.3); border-radius: 50%; color: var(--ink); cursor: pointer; }
+  #hud-help { position: absolute; left: 16px; bottom: 16px; font-size: 12px; color: rgba(232,236,242,.75);
+    text-shadow: 0 1px 3px rgba(0,0,0,.8); line-height: 1.6; }
+
+  /* ---------- Screens ---------- */
+  .screen { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    background: linear-gradient(180deg, rgba(8,12,20,.55), rgba(8,12,20,.88)); }
+  .screen h1 { font-size: 64px; font-weight: 900; letter-spacing: 6px; color: var(--accent);
+    text-shadow: 0 0 32px rgba(255,90,60,.55), 0 3px 0 rgba(0,0,0,.6); }
+  .screen h2 { font-size: 42px; font-weight: 900; letter-spacing: 4px; }
+  .screen .tag { font-size: 17px; color: var(--gold); letter-spacing: 3px; margin: 8px 0 22px; }
+  .screen p { max-width: 560px; font-size: 16px; line-height: 1.65; color: #d5dae3; margin: 6px 0; }
+  .screen .keys { font-size: 13.5px; color: #9aa3b2; line-height: 1.9; margin: 14px 0 22px; }
+  .btn { pointer-events: auto; cursor: pointer; border: none; border-radius: 8px;
+    padding: 13px 34px; font-size: 17px; font-weight: 800; letter-spacing: 1px;
+    background: var(--accent); color: #fff; margin: 6px; box-shadow: 0 4px 16px rgba(255,90,60,.4); }
+  .btn:hover { filter: brightness(1.12); }
+  .btn.ghost { background: rgba(255,255,255,.12); box-shadow: none; }
+  #title-cash { font-size: 19px; color: #7dff8a; font-weight: 700; margin-top: 10px; }
+  #title-stats { font-size: 14px; color: #9aa3b2; margin-top: 4px; }
+  #busted-text, #wasted-text, #story-stats { font-size: 17px; }
+
+  /* ---------- Job list ---------- */
+  #job-list { width: min(680px, 92vw); max-height: 58vh; overflow-y: auto; margin: 18px 0; }
+  .job-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; width: 100%;
+    text-align: left; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px; padding: 13px 16px; margin-bottom: 9px; cursor: pointer; color: var(--ink); }
+  .job-row:hover { background: rgba(255,255,255,.14); }
+  .job-row.done { opacity: .55; }
+  .job-name { font-size: 17px; font-weight: 800; }
+  .job-pay { font-size: 16px; font-weight: 800; color: #7dff8a; }
+  .job-brief { grid-column: 1 / -1; font-size: 13.5px; color: #b9c0cc; line-height: 1.5; }
+
+  /* ---------- Touch controls ---------- */
+  #touch-controls { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+  .tc-btn { position: absolute; pointer-events: auto; width: 62px; height: 62px; border-radius: 50%;
+    background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.4); color: #fff;
+    font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .tc-btn:active { background: rgba(255,90,60,.5); }
+  #tc-up { left: 76px; bottom: 148px; } #tc-down { left: 76px; bottom: 76px; }
+  #tc-left { left: 8px; bottom: 112px; } #tc-right { left: 144px; bottom: 112px; }
+  #tc-brake { right: 14px; bottom: 76px; background: rgba(242,183,5,.35); }
+  #tc-enter { right: 86px; bottom: 132px; } #tc-punch { right: 14px; bottom: 152px; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
+</head>
+<body>
+<div id="game"></div>
+
+<div id="hud" class="hidden">
+  <div id="hud-top-left">
+    <div id="hud-cash">$0</div>
+    <div id="hud-health"><div id="hud-health-fill"></div></div>
+    <div id="hud-stars">☆☆☆☆☆</div>
+    <div id="hud-ammo"></div>
+  </div>
+  <div id="hud-top-right">
+    <canvas id="minimap" width="168" height="168"></canvas>
+    <div id="hud-speed"></div>
+  </div>
+  <div id="hud-timer"></div>
+  <div id="hud-objective"></div>
+  <div id="hud-banner" class="hidden"></div>
+  <div id="hud-help">WASD drive / walk · Space handbrake / jump · E enter car · F punch · Click shoot · R reload · J jobs · Esc pause · M mute</div>
+  <button id="hud-mute" data-muted="0" title="Mute (M)">🔊</button>
+</div>
+
+<div id="touch-controls" class="hidden">
+  <div class="tc-btn" id="tc-up">▲</div>
+  <div class="tc-btn" id="tc-down">▼</div>
+  <div class="tc-btn" id="tc-left">◀</div>
+  <div class="tc-btn" id="tc-right">▶</div>
+  <div class="tc-btn" id="tc-brake">⏸</div>
+  <div class="tc-btn" id="tc-enter">E</div>
+  <div class="tc-btn" id="tc-punch">✊</div>
+</div>
+
+<div id="screen-title" class="screen">
+  <h1>SOLMARA HEAT</h1>
+  <div class="tag">AN OPEN-WORLD CRIME STORY · SOLMARA</div>
+  <p>You are <b>Jax Marlowe</b>, getaway driver. Your fixer <b>Mara Voss</b> phones the jobs —
+     eight of them, from a first fare to the bank job that ends it all. Drive anything,
+     steal anything, lose the cops, and don't get caught.</p>
+  <div class="keys">WASD — drive / walk &nbsp;·&nbsp; Mouse — camera &nbsp;·&nbsp; Space — handbrake / jump<br>
+     E — enter / exit car &nbsp;·&nbsp; F — punch &nbsp;·&nbsp; Click — shoot &nbsp;·&nbsp; R — reload &nbsp;·&nbsp; J — jobs &nbsp;·&nbsp; Esc — pause</div>
+  <div>
+    <button class="btn" id="btn-new">NEW STORY</button>
+    <button class="btn ghost hidden" id="btn-continue">CONTINUE</button>
+    <button class="btn ghost" id="btn-jobs">JOB LIST</button>
+  </div>
+  <div id="title-cash"></div>
+  <div id="title-stats"></div>
+</div>
+
+<div id="screen-jobs" class="screen hidden">
+  <h2>MARA'S JOBS</h2>
+  <p>Pick a job. Finish all eight to complete the story.</p>
+  <div id="job-list"></div>
+  <button class="btn ghost" id="btn-jobs-back">BACK</button>
+</div>
+
+<div id="screen-pause" class="screen hidden">
+  <h2>PAUSED</h2>
+  <p>Solmara waits for no one — except right now.</p>
+  <div>
+    <button class="btn" id="btn-resume">RESUME</button>
+    <button class="btn ghost" id="btn-quit">QUIT TO TITLE</button>
+  </div>
+</div>
+
+<div id="screen-busted" class="screen hidden">
+  <h2>BUSTED</h2>
+  <p id="busted-text">The PD caught you.</p>
+  <div>
+    <button class="btn" id="btn-retry">BACK ON THE STREETS</button>
+    <button class="btn ghost" id="btn-busted-title">TITLE</button>
+  </div>
+</div>
+
+<div id="screen-wasted" class="screen hidden">
+  <h2>WASTED</h2>
+  <p id="wasted-text">You woke up in St. Mara Hospital.</p>
+  <div>
+    <button class="btn" id="btn-retry">BACK ON THE STREETS</button>
+    <button class="btn ghost" id="btn-wasted-title">TITLE</button>
+  </div>
+</div>
+
+<div id="screen-story" class="screen hidden">
+  <h2>STORY COMPLETE</h2>
+  <p>The Big One is done. The boat is gone, the cash is yours, and Solmara
+     is officially Jax Marlowe's town. Mara is already calling about the next job.</p>
+  <div id="story-stats"></div>
+  <div>
+    <button class="btn" id="btn-story-again">PLAY AGAIN</button>
+    <button class="btn ghost" id="btn-story-title">TITLE</button>
+  </div>
+</div>
+
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>

@@ -15,6 +15,7 @@ const KEYMAP = {
   KeyF: 'punch',
   KeyR: 'reload',
   KeyM: 'mute',
+  KeyJ: 'jobs',
   Escape: 'pause',
   Enter: 'confirm',
 };

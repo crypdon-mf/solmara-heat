@@ -63,6 +63,7 @@ export function makeAvatar(city) {
     ammo: TUNE.magSize,
     reserve: 36,
     reloading: 0,
+    shootTimer: 0,
     punchTimer: 0,
     punchAnim: 0,
     gunDrawn: false,
@@ -113,6 +114,7 @@ export function makeAvatar(city) {
 
       // Timers.
       if (this.punchTimer > 0) this.punchTimer -= dt;
+      if (this.shootTimer > 0) this.shootTimer -= dt;
       if (this.punchAnim > 0) this.punchAnim -= dt;
       if (this.reloading > 0) {
         this.reloading -= dt;
@@ -147,7 +149,8 @@ export function makeAvatar(city) {
     },
 
     tryShoot() {
-      if (this.reloading > 0 || this.ammo <= 0) return 'empty';
+      if (this.reloading > 0 || this.ammo <= 0 || this.shootTimer > 0) return 'empty';
+      this.shootTimer = 0.22;
       this.ammo -= 1;
       this.gunDrawn = true;
       return 'fired';

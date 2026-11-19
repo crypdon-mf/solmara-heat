@@ -50,6 +50,7 @@ export function makeContracts(city, seed) {
     jobs: JOBS,
     active: null,      // active job object
     done: [],          // finished job ids
+    markerPos: null,   // {x, z} of the beacon, or null
     objective: '',
     distance: 0,
     timer: 0,
@@ -78,10 +79,11 @@ export function makeContracts(city, seed) {
   function setMarker(x, z, color = 0xffd23f) {
     group.visible = true;
     group.position.set(x, 0, z);
+    state.markerPos = { x, z };
     column.material.color.set(color);
     ring.material.color.set(color);
   }
-  function hideMarker() { group.visible = false; }
+  function hideMarker() { group.visible = false; state.markerPos = null; }
 
   function posOf(w) {
     return w.playerCar ? { x: w.playerCar.x, z: w.playerCar.z } : { x: w.player.x, z: w.player.z };
