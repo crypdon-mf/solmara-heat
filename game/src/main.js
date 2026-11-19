@@ -18,6 +18,7 @@ import { spawnTraffic, updateTraffic } from './traffic.js';
 import { spawnPedestrians, updatePedestrians } from './pedestrians.js';
 import { buildPlayerMesh, stepOnFoot, nearestCar, enterCar, exitCar, punch, addHeat } from './player.js';
 import { updatePolice, respawn } from './police.js';
+import { startMission, updateMissions, missionListState } from './missions.js';
 
 const STEP = 1 / 60;
 const MAX_FRAME = 0.25;
@@ -48,7 +49,7 @@ function writeSave() {
   try {
     window.localStorage.setItem(SAVE_KEY, JSON.stringify({
       cash: G.cash,
-      missionsDone: G.mission.doneIds.length,
+      missionsDone: G.mission.doneIds,
       bestStars: G.save.bestStars,
       playtime: G.save.playtime,
     }));
@@ -150,6 +151,7 @@ export function clearMarker() {
 }
 export { G };
 window.__G = G; // test/debug handle; harmless in play
+window.__missions = { start: (id) => startMission(G, id) };
 
 // On-foot movement, entering/exiting cars, shooting and heat live in
 // player.js now; main.js only wires them into the loop.
@@ -203,6 +205,7 @@ function step(dt, actions) {
   updateTraffic(G.traffic, rng, dt, p.inCar ? p.car : null);
   updatePedestrians(G.peds, rng, dt, G.time);
   updatePolice(G, dt);
+  updateMissions(G, dt);
   if (G.player.health <= 0 && G.screen === 'play') onWasted();
   // Parked cars the player bumped stay put; traffic separation runs in the
   // traffic update's own pass via the shared car list in step collisions.
@@ -237,6 +240,17 @@ function onWasted() {
 }
 G.onBusted = onBusted;
 G.onWasted = onWasted;
+G.onMissionEnd = (ok, def) => {
+  hud.setMissionResult(ok, def.name, def.reward);
+  writeSave();
+  setScreen('mission');
+};
+G.onStoryComplete = () => {
+  const stats = document.getElementById('story-stats');
+  if (stats) stats.textContent = `Jobs done: 5/5 · Cash: $${Math.floor(G.cash)} · Best wanted: ${G.save.bestStars}★ · Playtime: ${Math.floor(G.save.playtime / 60)} min`;
+  writeSave();
+  setScreen('story');
+};
 
 const hudEl = document.getElementById('hud');
 function setScreen(name) {
@@ -276,14 +290,27 @@ function bindButtons() {
   document.getElementById('btn-respawn').addEventListener('click', () => setScreen('play'));
   document.getElementById('btn-mission-ok').addEventListener('click', () => setScreen('play'));
   document.getElementById('btn-story-ok').addEventListener('click', () => setScreen('play'));
-  document.getElementById('btn-missions-close').addEventListener('click', () => setScreen(G.screen === 'missions' ? 'play' : 'title'));
+  document.getElementById('btn-missions-close').addEventListener('click', () => setScreen(G.jobsReturn || 'play'));
 }
 bindButtons();
 
 function openJobs() {
-  // Slice 4 fills this with the real mission list; for now it just opens the panel.
+  G.jobsReturn = G.screen === 'title' ? 'title' : 'play';
   const list = document.getElementById('mission-list');
-  list.innerHTML = '<p style="color:#9aa7b8">Jobs unlock as the story is built — Slice 4. For now, drive Solmara and learn the streets.</p>';
+  list.innerHTML = '';
+  for (const m of missionListState(G)) {
+    const btn = document.createElement('button');
+    btn.textContent = `${m.done ? '✓ ' : ''}${m.id}. ${m.name} — $${m.reward}${m.active ? ' (ACTIVE)' : ''}`;
+    btn.className = m.done ? 'done' : '';
+    btn.disabled = m.done || m.active || G.mission.active;
+    btn.addEventListener('click', () => {
+      if (startMission(G, m.id)) {
+        audio.unlock();
+        setScreen('play');
+      }
+    });
+    list.appendChild(btn);
+  }
   setScreen('missions');
 }
 
