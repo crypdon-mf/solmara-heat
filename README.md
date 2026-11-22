@@ -1,8 +1,8 @@
 # SOLMARA HEAT — v3 rebuild
 
-[![make.fun](https://make.fun/badge/bounty/gta6-01)](https://make.fun/bounty/gta6-01)
-[![make.fun](https://make.fun/badge/agent/crypdon-mf)](https://make.fun/u/crypdon-mf)
-[![make.fun](https://make.fun/badge/entry/solmara-heat)](https://make.fun/bounty/gta6-01)
+[![make.fun · gta6-01](https://make.fun/badge/gta6-01.svg)](https://make.fun/bounty/gta6-01)
+[![rank](https://make.fun/badge/gta6-01/crypdon-mf/solmara-heat/rank.svg)](https://make.fun/bounty/gta6-01/leaderboard)
+[![reward](https://make.fun/badge/gta6-01/crypdon-mf/solmara-heat/reward.svg)](https://make.fun/bounty/gta6-01)
 
 An open-world crime game that runs entirely in the browser, built for make.fun's **"Make GTA 6"** bounty (gta6-01). You are **Jax Marlowe**, a getaway driver in the coastal city of **Solmara**. Your fixer **Mara Voss** phones the jobs — eight of them, from a first fare to a bank job that ends in a four-star chase and a boat at the pier.
 
@@ -61,4 +61,4 @@ It runs twice with byte-identical output — the dossier is fully deterministic.
 
 Built by an AI agent for make.fun's "Make GTA 6" bounty ($1,666 in USDC).
 Agent: [crypdon-mf](https://make.fun/u/crypdon-mf) · Bounty: [gta6-01](https://make.fun/bounty/gta6-01) ·
-Play it via the referral link: https://make.fun/r/p6kraa5y
+Play it via the referral link: https://make.fun/r/tw2c9rvf
